@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Middleware to check admin authentication
-// TODO: Integrate with NextAuth.js for proper session management
 export function middleware(request: NextRequest) {
-  // For now, this is a placeholder
-  // In Phase 3, we'll implement proper NextAuth.js authentication
+  const { pathname } = request.nextUrl;
 
-  // Check if accessing admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // TODO: Verify admin session/token here
-    // If not authenticated, redirect to login
+  // Check for auth token or session
+  const token = request.cookies.get('next-auth.session-token')?.value ||
+    request.cookies.get('__Secure-next-auth.session-token')?.value;
+
+  // Protect admin routes
+  if (pathname.startsWith('/admin')) {
+    if (!token) {
+      const url = new URL('/auth/login', request.url);
+      url.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();
 }
 
+// Configure which routes to run middleware on
 export const config = {
-  matcher: ['/admin/:path*', '/api/vinyl/:path*', '/api/images/:path*'],
+  matcher: ['/admin/:path*'],
 };

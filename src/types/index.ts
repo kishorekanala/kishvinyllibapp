@@ -83,3 +83,26 @@ export interface LoginPayload {
 export interface RegisterPayload extends LoginPayload {
   name?: string
 }
+
+// NextAuth Types
+declare module 'next-auth' {
+  interface User {
+    id: string
+    email: string
+    role: string
+  }
+
+  interface Session {
+    user: User & {
+      id: string
+      role: string
+    }
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string
+    role: string
+  }
+}

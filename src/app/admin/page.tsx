@@ -7,13 +7,8 @@ export default function AdminPage() {
         Vinyl Collection Manager
       </h1>
       <p className="text-slate-600 dark:text-slate-400 mt-2">
-        Manage your vinyl records and images
+        Admin dashboard is loading...
       </p>
-      <div className="mt-8 p-6 bg-slate-100 dark:bg-slate-800 rounded-lg">
-        <p className="text-slate-700 dark:text-slate-300">
-          Admin dashboard component is ready. All API endpoints and UI components have been created and tested.
-        </p>
-      </div>
     </div>
   );
 }
