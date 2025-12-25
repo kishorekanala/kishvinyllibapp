@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { VinylImage } from '@/types';
+import { uploadImageToCloud } from '@/lib/cloudinary';
 
 interface ImageUploadProps {
   vinylId: string;
@@ -88,19 +89,41 @@ export function ImageUpload({ vinylId, onImagesUpload, existingImages = [] }: Im
       setIsUploading(true);
       setError(null);
 
-      const formData = new FormData();
-      previewImages.forEach(({ file }) => {
-        formData.append('files', file);
-      });
+      // Upload images to Cloudinary first
+      const uploadedImages: Array<{ url: string; publicId: string; altText: string }> = [];
+      
+      for (let i = 0; i < previewImages.length; i++) {
+        const { file } = previewImages[i];
+        
+        // Update progress
+        setUploadProgress(Math.round((i / previewImages.length) * 100));
 
+        // Upload to Cloudinary
+        const result = await uploadImageToCloud(file);
+        
+        if (!result) {
+          throw new Error(`Failed to upload ${file.name} to Cloudinary`);
+        }
+
+        uploadedImages.push({
+          url: result.url,
+          publicId: result.publicId,
+          altText: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
+        });
+      }
+
+      // Save to database with Cloudinary URLs
       const response = await fetch(`/api/vinyl/${vinylId}/images`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          images: uploadedImages,
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Upload failed');
+        throw new Error(data.error || 'Failed to save images');
       }
 
       const data = await response.json();

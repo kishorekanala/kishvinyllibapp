@@ -52,8 +52,40 @@ export async function POST(
     const contentType = req.headers.get('content-type');
     let newImages = [];
 
-    // Handle FormData (file uploads)
-    if (contentType?.includes('multipart/form-data')) {
+    // Handle JSON from Cloudinary uploads (client-side uploaded to Cloudinary)
+    if (contentType?.includes('application/json')) {
+      const body = await req.json();
+      const { images: uploadedImages } = body;
+
+      if (!uploadedImages || !Array.isArray(uploadedImages) || uploadedImages.length === 0) {
+        return NextResponse.json(
+          { success: false, error: 'No images provided' },
+          { status: 400 }
+        );
+      }
+
+      const maxOrder = record.images.length > 0
+        ? Math.max(...record.images.map(img => img.displayOrder))
+        : 0;
+
+      for (let i = 0; i < uploadedImages.length; i++) {
+        const { url, publicId, altText } = uploadedImages[i];
+
+        const image = await prisma.vinylImage.create({
+          data: {
+            vinylRecordId: id,
+            imageUrl: url,
+            imagePublicId: publicId,
+            altText: altText || record.title,
+            displayOrder: maxOrder + i + 1,
+          },
+        });
+
+        newImages.push(image);
+      }
+    } 
+    // Handle FormData (legacy file uploads)
+    else if (contentType?.includes('multipart/form-data')) {
       const formData = await req.formData();
       const files = formData.getAll('files') as File[];
 
@@ -71,7 +103,7 @@ export async function POST(
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
-        // For now, store placeholder URLs. In Phase 6, we'll integrate Cloudinary
+        // For legacy uploads, store placeholder URLs
         const imageUrl = `https://via.placeholder.com/400x400?text=${record.title.replace(/ /g, '+')}+${maxOrder + i + 1}`;
         const publicId = `${record.id}-img-${maxOrder + i + 1}`;
 
