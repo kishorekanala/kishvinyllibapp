@@ -2,7 +2,7 @@
 // This is a placeholder for image upload functionality
 // Configure with your Cloudinary account credentials
 
-export async function uploadImageToCloud(file: File): Promise<{
+export async function uploadImageToCloud(_file: File): Promise<{
   url: string;
   publicId: string;
 } | null> {
@@ -37,7 +37,7 @@ export async function uploadImageToCloud(file: File): Promise<{
   }
 }
 
-export async function deleteImageFromCloud(publicId: string): Promise<boolean> {
+export async function deleteImageFromCloud(_publicId: string): Promise<boolean> {
   try {
     // TODO: Implement actual Cloudinary deletion
     // For now, returning true to indicate success

@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+export async function DELETE(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
 
-// DELETE individual image
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
-    // TODO: Add authentication check here
-    const { id } = params;
-
-    // Find the image
-    const image = await prisma.vinylImage.findUnique({
-      where: { id },
-    });
+    const image = await prisma.vinylImage.findUnique({ where: { id } });
 
     if (!image) {
       return NextResponse.json(
@@ -25,14 +17,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // TODO: Delete image from Cloudinary/Vercel Blob using image.imagePublicId
+    await prisma.vinylImage.delete({ where: { id } });
 
-    // Delete image record from database
-    await prisma.vinylImage.delete({
-      where: { id },
-    });
-
-    // Get remaining images count
     const remainingImages = await prisma.vinylImage.count({
       where: { vinylRecordId: image.vinylRecordId },
     });

@@ -1,150 +1,125 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+export async function GET(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
 
-// GET images for a vinyl record
-export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
-
-    // Verify vinyl record exists
-    const vinyl = await prisma.vinylRecord.findUnique({
+    const record = await prisma.vinylRecord.findUnique({
       where: { id },
+      include: { images: { orderBy: { displayOrder: 'asc' } } },
     });
 
-    if (!vinyl) {
+    if (!record) {
       return NextResponse.json(
         { success: false, error: 'Vinyl record not found' },
         { status: 404 }
       );
     }
 
-    const images = await prisma.vinylImage.findMany({
-      where: { vinylRecordId: id },
-      orderBy: { displayOrder: 'asc' },
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: images,
-    });
+    return NextResponse.json({ success: true, data: record.images });
   } catch (error) {
-    console.error('Error fetching images:', error);
+    console.error('Error fetching vinyl images:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch images' },
+      { success: false, error: 'Failed to fetch vinyl images' },
       { status: 500 }
     );
   }
 }
 
-// POST add images to vinyl record
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export async function POST(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
+
   try {
-    // TODO: Add authentication check here
-    const { id } = params;
     const body = await req.json();
+    const { imageUrl, caption } = body;
 
-    // Verify vinyl record exists
-    const vinyl = await prisma.vinylRecord.findUnique({
-      where: { id },
-    });
+    if (!imageUrl) {
+      return NextResponse.json(
+        { success: false, error: 'Image URL is required' },
+        { status: 400 }
+      );
+    }
 
-    if (!vinyl) {
+    const record = await prisma.vinylRecord.findUnique({ where: { id } });
+    if (!record) {
       return NextResponse.json(
         { success: false, error: 'Vinyl record not found' },
         { status: 404 }
       );
     }
 
-    // Validate required fields
-    if (!body.imageUrl || !body.imagePublicId) {
-      return NextResponse.json(
-        { success: false, error: 'imageUrl and imagePublicId are required' },
-        { status: 400 }
-      );
-    }
-
-    // Get the highest display order for this vinyl
     const lastImage = await prisma.vinylImage.findFirst({
       where: { vinylRecordId: id },
       orderBy: { displayOrder: 'desc' },
     });
 
-    const newDisplayOrder = (lastImage?.displayOrder || 0) + 1;
+    const nextDisplayOrder = (lastImage?.displayOrder || 0) + 1;
 
-    const image = await prisma.vinylImage.create({
+    const newImage = await prisma.vinylImage.create({
       data: {
         vinylRecordId: id,
-        imageUrl: body.imageUrl,
-        imagePublicId: body.imagePublicId,
-        altText: body.altText || '',
-        displayOrder: newDisplayOrder,
+        imageUrl,
+        imagePublicId: 'temp',
+        caption: caption || null,
+        displayOrder: nextDisplayOrder,
       },
     });
 
-    return NextResponse.json(
-      { success: true, data: image },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data: newImage });
   } catch (error) {
-    console.error('Error adding image:', error);
+    console.error('Error adding vinyl image:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to add image' },
+      { success: false, error: 'Failed to add vinyl image' },
       { status: 500 }
     );
   }
 }
 
-// PATCH reorder images
-export async function PATCH(req: NextRequest, { params }: RouteParams) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
+
   try {
-    // TODO: Add authentication check here
-    const { id } = params;
     const body = await req.json();
+    const { images } = body;
 
-    // Verify vinyl record exists
-    const vinyl = await prisma.vinylRecord.findUnique({
-      where: { id },
-    });
+    if (!Array.isArray(images)) {
+      return NextResponse.json(
+        { success: false, error: 'Images array is required' },
+        { status: 400 }
+      );
+    }
 
-    if (!vinyl) {
+    const record = await prisma.vinylRecord.findUnique({ where: { id } });
+    if (!record) {
       return NextResponse.json(
         { success: false, error: 'Vinyl record not found' },
         { status: 404 }
       );
     }
 
-    // Update all images with new display order
-    if (!Array.isArray(body.images)) {
-      return NextResponse.json(
-        { success: false, error: 'images array is required' },
-        { status: 400 }
-      );
-    }
-
-    const updatePromises = body.images.map((img: { id: string; displayOrder: number }, index: number) =>
+    const updatePromises = images.map((img, index) =>
       prisma.vinylImage.update({
         where: { id: img.id },
-        data: { displayOrder: index + 1 },
+        data: { displayOrder: index },
       })
     );
 
     const updatedImages = await Promise.all(updatePromises);
-
-    return NextResponse.json({
-      success: true,
-      data: updatedImages,
-      message: 'Image order updated successfully',
-    });
+    return NextResponse.json({ success: true, data: updatedImages });
   } catch (error) {
-    console.error('Error reordering images:', error);
+    console.error('Error reordering vinyl images:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to reorder images' },
+      { success: false, error: 'Failed to reorder vinyl images' },
       { status: 500 }
     );
   }

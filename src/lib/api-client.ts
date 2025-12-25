@@ -139,7 +139,7 @@ class ApiClient {
   }
 
   // Authentication
-  async login(email: string, password: string): Promise<{ success: boolean; user?: any }> {
+  async login(email: string, password: string): Promise<{ success: boolean; user?: unknown }> {
     try {
       const response = await this.client.post('/auth/login', { email, password });
       if (response.data.success && response.data.data) {
@@ -155,7 +155,7 @@ class ApiClient {
     }
   }
 
-  async register(email: string, password: string): Promise<{ success: boolean; user?: any }> {
+  async register(email: string, password: string): Promise<{ success: boolean; user?: unknown }> {
     try {
       const response = await this.client.post('/auth/register', { email, password });
       if (response.data.success && response.data.data) {

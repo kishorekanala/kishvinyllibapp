@@ -7,6 +7,7 @@ interface VinylListProps {
   records: VinylRecord[];
   onEdit: (record: VinylRecord) => void;
   onDelete: (id: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRefresh: () => void;
 }
 

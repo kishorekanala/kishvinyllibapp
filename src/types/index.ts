@@ -29,13 +29,13 @@ export interface ApiResponse<T> {
   error?: string
 }
 
-export interface VinylRecordResponse extends ApiResponse<VinylRecord> {}
+export type VinylRecordResponse = ApiResponse<VinylRecord>;
 
-export interface VinylRecordsResponse extends ApiResponse<VinylRecord[]> {}
+export type VinylRecordsResponse = ApiResponse<VinylRecord[]>;
 
-export interface VinylImageResponse extends ApiResponse<VinylImage> {}
+export type VinylImageResponse = ApiResponse<VinylImage>;
 
-export interface VinylImagesResponse extends ApiResponse<VinylImage[]> {}
+export type VinylImagesResponse = ApiResponse<VinylImage[]>;
 
 // Request payload types
 export interface CreateVinylRecordPayload {

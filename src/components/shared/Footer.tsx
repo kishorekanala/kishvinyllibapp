@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -20,14 +22,14 @@ export function Footer() {
             <h4 className="text-lg font-bold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-slate-400">
               <li>
-                <a href="/" className="hover:text-white transition">
+                <Link href="/" className="hover:text-white transition">
                   Gallery
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/admin" className="hover:text-white transition">
+                <Link href="/admin" className="hover:text-white transition">
                   Admin
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -23,7 +23,13 @@ export function VinylForm({ onSuccess, onCancel, initialData }: VinylFormProps) 
     formState: { errors },
   } = useForm<CreateVinylRecordInput>({
     resolver: zodResolver(createVinylRecordSchema),
-    defaultValues: initialData || {},
+    defaultValues: initialData ? {
+      title: initialData.title,
+      artist: initialData.artist,
+      year: initialData.year || undefined,
+      genre: initialData.genre || undefined,
+      description: initialData.description || undefined,
+    } : {},
   });
 
   const onSubmit = async (data: CreateVinylRecordInput) => {

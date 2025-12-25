@@ -2,26 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { UpdateVinylRecordPayload } from '@/types';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+export async function GET(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
 
-// GET single vinyl record
-export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
-
     const record = await prisma.vinylRecord.findUnique({
       where: { id },
-      include: {
-        images: {
-          orderBy: {
-            displayOrder: 'asc',
-          },
-        },
-      },
+      include: { images: { orderBy: { displayOrder: 'asc' } } },
     });
 
     if (!record) {
@@ -31,10 +21,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: record,
-    });
+    return NextResponse.json({ success: true, data: record });
   } catch (error) {
     console.error('Error fetching vinyl record:', error);
     return NextResponse.json(
@@ -44,48 +31,37 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// PUT update vinyl record
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
+
   try {
-    // TODO: Add authentication check here
-    const { id } = params;
     const body: UpdateVinylRecordPayload = await req.json();
+    const existing = await prisma.vinylRecord.findUnique({ where: { id } });
 
-    // Check if record exists
-    const existingRecord = await prisma.vinylRecord.findUnique({
-      where: { id },
-    });
-
-    if (!existingRecord) {
+    if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Vinyl record not found' },
         { status: 404 }
       );
     }
 
-    const updatedRecord = await prisma.vinylRecord.update({
+    const updated = await prisma.vinylRecord.update({
       where: { id },
       data: {
-        title: body.title || existingRecord.title,
-        artist: body.artist || existingRecord.artist,
-        year: body.year !== undefined ? body.year : existingRecord.year,
-        genre: body.genre !== undefined ? body.genre : existingRecord.genre,
-        description: body.description !== undefined ? body.description : existingRecord.description,
+        title: body.title || existing.title,
+        artist: body.artist || existing.artist,
+        year: body.year !== undefined ? body.year : existing.year,
+        genre: body.genre !== undefined ? body.genre : existing.genre,
+        description: body.description !== undefined ? body.description : existing.description,
         updatedAt: new Date(),
       },
-      include: {
-        images: {
-          orderBy: {
-            displayOrder: 'asc',
-          },
-        },
-      },
+      include: { images: { orderBy: { displayOrder: 'asc' } } },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: updatedRecord,
-    });
+    return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     console.error('Error updating vinyl record:', error);
     return NextResponse.json(
@@ -95,18 +71,16 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// DELETE vinyl record
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
-  try {
-    // TODO: Add authentication check here
-    const { id } = params;
+export async function DELETE(
+  req: NextRequest,
+  { params }: any
+) {
+  const { id } = params;
 
-    // Check if record exists
+  try {
     const record = await prisma.vinylRecord.findUnique({
       where: { id },
-      include: {
-        images: true,
-      },
+      include: { images: true },
     });
 
     if (!record) {
@@ -116,13 +90,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // TODO: Delete images from Cloudinary/Vercel Blob before deleting records
-    // For each image in record.images, call cloud storage delete API
-
-    // Delete vinyl record (images will be cascade deleted)
-    await prisma.vinylRecord.delete({
-      where: { id },
-    });
+    await prisma.vinylRecord.delete({ where: { id } });
 
     return NextResponse.json({
       success: true,
