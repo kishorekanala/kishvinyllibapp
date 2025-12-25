@@ -1,6 +1,7 @@
 'use client';
 
 import { VinylRecord } from '@/types';
+import Link from 'next/link';
 
 interface VinylListProps {
   records: VinylRecord[];
@@ -79,6 +80,12 @@ export function VinylList({ records, onEdit, onDelete }: VinylListProps) {
                   >
                     Edit
                   </button>
+                  <Link
+                    href={`/admin/vinyl/${record.id}`}
+                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Images
+                  </Link>
                   <button
                     onClick={() => onDelete(record.id)}
                     className="text-red-600 dark:text-red-400 hover:underline"
