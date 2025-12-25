@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  role      Role       @default(USER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model VinylRecord {
+  id          String        @id @default(cuid())
+  title       String
+  artist      String
+  year        Int?
+  genre       String?
+  description String?
+  images      VinylImage[]  @relation(onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("vinyl_records")
+}
+
+model VinylImage {
+  id            String      @id @default(cuid())
+  vinylRecordId String
+  vinylRecord   VinylRecord @relation(fields: [vinylRecordId], references: [id])
+  imageUrl      String
+  imagePublicId String      // For Cloudinary/Blob deletion reference
+  altText       String?
+  displayOrder  Int         // Order in which images appear for a vinyl record
+  createdAt     DateTime    @default(now())
+
+  @@unique([vinylRecordId, displayOrder])
+  @@index([vinylRecordId])
+  @@map("vinyl_images")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
