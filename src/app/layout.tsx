@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VinylLib - Vinyl Record Collection",
+  title: "KishoreVinylLibrary - Vinyl Record Collection",
   description: "A modern web application for managing and browsing vinyl record collections",
 };
 

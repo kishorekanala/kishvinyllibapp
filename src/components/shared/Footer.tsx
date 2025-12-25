@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* About */}
           <div>
-            <h3 className="text-lg font-bold mb-4">VinylLib</h3>
+            <h3 className="text-lg font-bold mb-4">KishoreVinylLibrary</h3>
             <p className="text-slate-400">
               A modern web application for managing and browsing vinyl record collections.
             </p>
@@ -45,7 +45,7 @@ export function Footer() {
 
         <div className="border-t border-slate-700 pt-8">
           <p className="text-center text-slate-400">
-            &copy; {currentYear} VinylLib. All rights reserved.
+            &copy; {currentYear} KishoreVinylLibrary. All rights reserved.
           </p>
         </div>
       </div>

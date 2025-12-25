@@ -18,8 +18,8 @@ export function Navigation() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 font-bold text-xl">
-              <span className="text-violet-600 dark:text-violet-400">Vinyl</span>
-              <span className="text-slate-900 dark:text-white">Lib</span>
+              <span className="text-violet-600 dark:text-violet-400">Kishore</span>
+              <span className="text-slate-900 dark:text-white">VinylLibrary</span>
             </Link>
           </div>
 
