@@ -7,7 +7,7 @@ export default function AdminPage() {
         Vinyl Collection Manager
       </h1>
       <p className="text-slate-600 dark:text-slate-400 mt-2">
-        Admin dashboard is loading...
+        Admin dashboard features coming soon
       </p>
     </div>
   );

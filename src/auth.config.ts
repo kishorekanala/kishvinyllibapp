@@ -1,38 +1,9 @@
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import type { NextRequest } from "next/server";
 
-export const authConfig = {
+export const authConfig: any = {
   pages: {
     signIn: "/auth/login",
-    error: "/auth/login",
-  },
-  callbacks: {
-    authorized({ auth, request: { nextUrl } }: { auth: any; request: { nextUrl: URL } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnAdminPage = nextUrl.pathname.startsWith("/admin");
-
-      if (isOnAdminPage) {
-        return isLoggedIn;
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-      return true;
-    },
-    jwt({ token, user }: { token: any; user?: any }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-      }
-      return token;
-    },
-    session({ session, token }: { session: any; token: any }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-      }
-      return session;
-    },
   },
   providers: [
     Credentials({
@@ -46,12 +17,12 @@ export const authConfig = {
         }
 
         try {
-          // Dynamically import Prisma client to avoid bundling issues
+          // Dynamically import Prisma to avoid circular dependencies
           const { PrismaClient } = await import("@prisma/client");
           const prisma = new PrismaClient();
 
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email as string },
+            where: { email: credentials.email },
           });
 
           if (!user) {
@@ -60,7 +31,7 @@ export const authConfig = {
           }
 
           const passwordMatch = await bcrypt.compare(
-            credentials.password as string,
+            credentials.password,
             user.password
           );
 
@@ -82,4 +53,20 @@ export const authConfig = {
       },
     }),
   ],
+  callbacks: {
+    jwt({ token, user }: any) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    session({ session, token }: any) {
+      if (session.user) {
+        session.user.id = token.id;
+        session.user.role = token.role;
+      }
+      return session;
+    },
+  },
 };
