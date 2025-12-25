@@ -1,53 +1,55 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { VinylRecord } from '@/types';
-import { apiClient } from '@/lib/api-client';
 import { VinylGallery } from '@/components/user/VinylGallery';
 import { SearchFilter } from '@/components/user/SearchFilter';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function Home() {
   const [records, setRecords] = useState<VinylRecord[]>([]);
+  const [genres, setGenres] = useState<string[]>([]);
+  const [years, setYears] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  // Fetch vinyl records on mount
-  useEffect(() => {
-    const fetchRecords = async () => {
+  // Fetch vinyl records with search and filters
+  const fetchRecords = useCallback(async (search?: string, genre?: string, year?: number) => {
+    try {
       setIsLoading(true);
-      const data = await apiClient.getVinylRecords();
-      setRecords(data);
-      setIsLoading(false);
-    };
+      const params = new URLSearchParams();
+      
+      if (search) params.append('search', search);
+      if (genre) params.append('genre', genre);
+      if (year) params.append('year', year.toString());
 
-    fetchRecords();
+      const response = await fetch(`/api/vinyl?${params.toString()}`);
+      const data = await response.json();
+
+      setRecords(data.data || []);
+      setGenres(data.filters?.genres || []);
+      setYears(data.filters?.years || []);
+    } catch (error) {
+      console.error('Failed to fetch records:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  // Extract unique genres
-  const genres = useMemo(() => {
-    return Array.from(new Set(
-      records
-        .filter(r => r.genre)
-        .map(r => r.genre as string)
-    )).sort();
-  }, [records]);
+  // Fetch records on mount
+  useEffect(() => {
+    fetchRecords();
+  }, [fetchRecords]);
 
-  // Filter records based on search and genre
-  const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
-      const matchesSearch =
-        !searchQuery ||
-        record.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (record.genre?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
-
-      const matchesGenre = !selectedGenre || record.genre === selectedGenre;
-
-      return matchesSearch && matchesGenre;
-    });
-  }, [records, searchQuery, selectedGenre]);
+  // Handle search and filter changes
+  const handleSearch = useCallback((search: string, genre?: string, year?: number) => {
+    setSearchQuery(search);
+    setSelectedGenre(genre || '');
+    setSelectedYear(year || null);
+    fetchRecords(search, genre, year);
+  }, [fetchRecords]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -64,16 +66,16 @@ export default function Home() {
       {/* Search and Filter */}
       {!isLoading && records.length > 0 && (
         <SearchFilter
-          onSearch={setSearchQuery}
-          onFilterByGenre={setSelectedGenre}
+          onSearch={handleSearch}
           genres={genres}
+          years={years}
         />
       )}
 
       {/* Results Count */}
       {!isLoading && records.length > 0 && (
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-          Showing {filteredRecords.length} of {records.length} records
+          Found {records.length} record{records.length !== 1 ? 's' : ''}
         </p>
       )}
 
@@ -81,7 +83,7 @@ export default function Home() {
       {isLoading ? (
         <LoadingSpinner />
       ) : (
-        <VinylGallery records={filteredRecords} />
+        <VinylGallery records={records} />
       )}
     </div>
   );

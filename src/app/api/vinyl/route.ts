@@ -2,10 +2,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { CreateVinylRecordPayload, UpdateVinylRecordPayload } from '@/types';
 
-// GET all vinyl records
-export async function GET() {
+// GET all vinyl records with search and filter support
+export async function GET(req: NextRequest) {
   try {
+    const searchParams = req.nextUrl.searchParams;
+    const search = searchParams.get('search')?.toLowerCase() || '';
+    const genre = searchParams.get('genre')?.toLowerCase() || '';
+    const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : null;
+
+    // Build where conditions dynamically
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { artist: { contains: search } },
+        { description: { contains: search } },
+      ];
+    }
+
+    if (genre) {
+      where.genre = { contains: genre };
+    }
+
+    if (year) {
+      where.year = year;
+    }
+
     const records = await prisma.vinylRecord.findMany({
+      where: Object.keys(where).length > 0 ? where : undefined,
       include: {
         images: {
           orderBy: {
@@ -18,9 +43,29 @@ export async function GET() {
       },
     });
 
+    // Get unique genres for filter options
+    const genres = await prisma.vinylRecord.findMany({
+      distinct: ['genre'],
+      select: { genre: true },
+      where: { genre: { not: null } },
+    });
+
+    // Get unique years for filter options
+    const years = await prisma.vinylRecord.findMany({
+      distinct: ['year'],
+      select: { year: true },
+      where: { year: { not: null } },
+      orderBy: { year: 'desc' },
+    });
+
     return NextResponse.json({
       success: true,
       data: records,
+      filters: {
+        genres: genres.map(g => g.genre).filter(Boolean),
+        years: years.map(y => y.year).filter(Boolean),
+      },
+      count: records.length,
     });
   } catch (error) {
     console.error('Error fetching vinyl records:', error);

@@ -5,7 +5,7 @@ export async function GET(
   req: NextRequest,
   { params }: any
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const record = await prisma.vinylRecord.findUnique({
@@ -34,7 +34,7 @@ export async function POST(
   req: NextRequest,
   { params }: any
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const record = await prisma.vinylRecord.findUnique({ 

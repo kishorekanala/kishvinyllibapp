@@ -3,8 +3,6 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { VinylRecord, VinylImage } from '@/types';
-import { apiClient } from '@/lib/api-client';
-import { ImageUpload } from '@/components/admin/ImageUpload';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function EditVinylPage() {
@@ -21,9 +19,12 @@ export default function EditVinylPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const record = await apiClient.getVinylRecord(vinylId);
-        setVinyl(record);
-        setImages(record.images || []);
+        const response = await fetch(`/api/vinyl/${vinylId}`);
+        const data = await response.json();
+        if (data.data) {
+          setVinyl(data.data);
+          setImages(data.data.images || []);
+        }
       } catch (err) {
         setError('Failed to load vinyl record');
       } finally {
@@ -31,24 +32,24 @@ export default function EditVinylPage() {
       }
     };
 
-    loadData();
+    if (vinylId) {
+      loadData();
+    }
   }, [vinylId]);
-
-  const handleImagesUpload = (newImages: VinylImage[]) => {
-    setImages([...images, ...newImages]);
-  };
 
   const handleDeleteImage = async (imageId: string) => {
     if (!confirm('Delete this image?')) return;
 
     try {
-      const success = await apiClient.deleteImage(imageId);
-      if (success) {
+      const response = await fetch(`/api/vinyl/${vinylId}/images/${imageId}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
         setImages(images.filter(img => img.id !== imageId));
       } else {
         setError('Failed to delete image');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to delete image');
     }
   };
@@ -97,18 +98,6 @@ export default function EditVinylPage() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Image Upload Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
-          Add Images
-        </h2>
-        <ImageUpload
-          vinylId={vinylId}
-          onImagesUpload={handleImagesUpload}
-          existingImages={images}
-        />
       </div>
 
       {/* Current Images */}

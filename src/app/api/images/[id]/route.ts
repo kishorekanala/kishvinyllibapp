@@ -5,7 +5,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: any
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const image = await prisma.vinylImage.findUnique({ where: { id } });
