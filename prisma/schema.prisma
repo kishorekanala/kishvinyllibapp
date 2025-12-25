@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -28,7 +28,7 @@ model VinylRecord {
   year        Int?
   genre       String?
   description String?
-  images      VinylImage[]  @relation(onDelete: Cascade)
+  images      VinylImage[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -38,7 +38,7 @@ model VinylRecord {
 model VinylImage {
   id            String      @id @default(cuid())
   vinylRecordId String
-  vinylRecord   VinylRecord @relation(fields: [vinylRecordId], references: [id])
+  vinylRecord   VinylRecord @relation(fields: [vinylRecordId], references: [id], onDelete: Cascade)
   imageUrl      String
   imagePublicId String      // For Cloudinary/Blob deletion reference
   altText       String?

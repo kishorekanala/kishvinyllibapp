@@ -1,17 +1,14 @@
 'use client';
 
 import { VinylRecord } from '@/types';
-import Image from 'next/image';
 
 interface VinylListProps {
   records: VinylRecord[];
   onEdit: (record: VinylRecord) => void;
   onDelete: (id: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onRefresh: () => void;
 }
 
-export function VinylList({ records, onEdit, onDelete, onRefresh }: VinylListProps) {
+export function VinylList({ records, onEdit, onDelete }: VinylListProps) {
   if (records.length === 0) {
     return (
       <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg">

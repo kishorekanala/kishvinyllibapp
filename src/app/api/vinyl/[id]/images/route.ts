@@ -67,7 +67,7 @@ export async function POST(
         vinylRecordId: id,
         imageUrl,
         imagePublicId: 'temp',
-        caption: caption || null,
+        altText: caption || null,
         displayOrder: nextDisplayOrder,
       },
     });

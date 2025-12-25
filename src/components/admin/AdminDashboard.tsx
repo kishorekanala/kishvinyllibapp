@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { VinylRecord } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { VinylForm } from './VinylForm';
@@ -13,17 +13,18 @@ export function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<VinylRecord | undefined>();
 
-  // Fetch records on mount
-  useEffect(() => {
-    fetchRecords();
-  }, []);
-
-  const fetchRecords = async () => {
+  // Fetch records with useCallback to handle dependency array correctly
+  const fetchRecords = useCallback(async () => {
     setIsLoading(true);
     const data = await apiClient.getVinylRecords();
     setRecords(data);
     setIsLoading(false);
-  };
+  }, []);
+
+  // Fetch records on mount
+  useEffect(() => {
+    fetchRecords();
+  }, [fetchRecords]);
 
   const handleFormSuccess = (record: VinylRecord) => {
     if (selectedRecord) {
@@ -98,7 +99,6 @@ export function AdminDashboard() {
               records={records}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onRefresh={fetchRecords}
             />
           )}
         </>
