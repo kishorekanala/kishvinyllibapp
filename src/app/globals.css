@@ -12,6 +12,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode support - both class-based (from theme toggle) and system preference */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,8 +20,84 @@
   }
 }
 
+/* Explicit dark class support */
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Force dark mode text color on all elements when dark class is present */
+:root.dark {
+  color-scheme: dark;
+}
+
+:root.dark body {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* Ensure all text elements get proper contrast */
+:root.dark p,
+:root.dark span,
+:root.dark div,
+:root.dark h1,
+:root.dark h2,
+:root.dark h3,
+:root.dark h4,
+:root.dark h5,
+:root.dark h6,
+:root.dark label,
+:root.dark input,
+:root.dark textarea,
+:root.dark select {
+  color: inherit;
+}
+
+:root.dark input,
+:root.dark textarea,
+:root.dark select {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+
+/* Explicit text color for dark mode */
+:root.dark input::placeholder {
+  color: #94a3b8;
+}
+
+/* Explicit dark mode styling for navigation */
+:root.dark nav {
+  background-color: #0f172a !important;
+  border-bottom-color: #1e293b;
+}
+
+:root.dark nav a,
+:root.dark nav span,
+:root.dark nav button {
+  color: #cbd5e1 !important;
+}
+
+:root.dark nav a:hover {
+  color: #a78bfa !important;
+}
+
+:root.dark nav .text-slate-900 {
+  color: #ffffff !important;
+}
+
+:root.dark nav .text-violet-600 {
+  color: #a78bfa !important;
+}
+
+/* Ensure logo text has proper contrast */
+:root.dark .text-slate-900.dark\:text-white {
+  color: #ffffff !important;
 }

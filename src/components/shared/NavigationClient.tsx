@@ -3,16 +3,35 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useCallback, useEffect, useState } from 'react';
-import { useTheme } from '@/components/providers/ThemeProvider';
 
-export function Navigation() {
+export function NavigationClient() {
   const { data: session } = useSession();
-  const { theme, toggleTheme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     setIsMounted(true);
+    // Get theme from localStorage or system preference
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme as 'light' | 'dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+    }
   }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Properly update the dark class
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const handleLogout = useCallback(() => {
     signOut({ callbackUrl: '/' });
@@ -53,7 +72,7 @@ export function Navigation() {
                   {isMounted && (
                     <button
                       onClick={toggleTheme}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition text-lg"
                       title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
                       aria-label="Toggle dark mode"
                     >
@@ -73,7 +92,7 @@ export function Navigation() {
                 {isMounted && (
                   <button
                     onClick={toggleTheme}
-                    className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition text-lg"
                     title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
                     aria-label="Toggle dark mode"
                   >
