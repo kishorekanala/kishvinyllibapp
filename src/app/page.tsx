@@ -38,10 +38,10 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch records on mount
+  // Fetch records on mount only
   useEffect(() => {
     fetchRecords();
-  }, [fetchRecords]);
+  }, []);
 
   // Handle search and filter changes
   const handleSearch = useCallback((search: string, genre?: string, year?: number) => {
@@ -63,17 +63,15 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Search and Filter */}
-      {!isLoading && records.length > 0 && (
-        <SearchFilter
-          onSearch={handleSearch}
-          genres={genres}
-          years={years}
-        />
-      )}
+      {/* Search and Filter - Always mounted to prevent state reset */}
+      <SearchFilter
+        onSearch={handleSearch}
+        genres={genres}
+        years={years}
+      />
 
       {/* Results Count */}
-      {!isLoading && records.length > 0 && (
+      {records.length > 0 && (
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
           Found {records.length} record{records.length !== 1 ? 's' : ''}
         </p>
@@ -82,8 +80,14 @@ export default function Home() {
       {/* Vinyl Gallery */}
       {isLoading ? (
         <LoadingSpinner />
-      ) : (
+      ) : records.length > 0 ? (
         <VinylGallery records={records} />
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-slate-600 dark:text-slate-400 text-lg">
+            No vinyl records found. Try adjusting your search filters.
+          </p>
+        </div>
       )}
     </div>
   );

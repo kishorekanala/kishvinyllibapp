@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface SearchFilterProps {
   onSearch: (search: string, genre?: string, year?: number) => void;
@@ -12,6 +12,7 @@ export function SearchFilter({ onSearch, genres, years }: SearchFilterProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = useCallback((search: string, genre?: string, year?: number) => {
     onSearch(search, genre, year);
@@ -20,8 +21,25 @@ export function SearchFilter({ onSearch, genres, years }: SearchFilterProps) {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    handleSearch(query, selectedGenre || undefined, selectedYear || undefined);
+    
+    // Debounce the search API call
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch(query, selectedGenre || undefined, selectedYear || undefined);
+    }, 300);
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleGenreChange = (genre: string) => {
     setSelectedGenre(genre);
@@ -44,7 +62,7 @@ export function SearchFilter({ onSearch, genres, years }: SearchFilterProps) {
         </label>
         <input
           type="text"
-          placeholder="Search by title, artist, or description..."
+          placeholder="Search by title, artist, genre, or description..."
           value={searchQuery}
           onChange={handleSearchChange}
           className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 transition"

@@ -6,31 +6,12 @@ import { CreateVinylRecordPayload, UpdateVinylRecordPayload } from '@/types';
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
-    const search = searchParams.get('search')?.toLowerCase() || '';
-    const genre = searchParams.get('genre')?.toLowerCase() || '';
+    const search = searchParams.get('search') || '';
+    const genre = searchParams.get('genre') || '';
     const year = searchParams.get('year') ? parseInt(searchParams.get('year')!) : null;
 
-    // Build where conditions dynamically
-    const where: any = {};
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { artist: { contains: search } },
-        { description: { contains: search } },
-      ];
-    }
-
-    if (genre) {
-      where.genre = { contains: genre };
-    }
-
-    if (year) {
-      where.year = year;
-    }
-
+    // Fetch all records first, then filter in memory for better SQLite compatibility
     const records = await prisma.vinylRecord.findMany({
-      where: Object.keys(where).length > 0 ? where : undefined,
       include: {
         images: {
           orderBy: {
@@ -42,6 +23,30 @@ export async function GET(req: NextRequest) {
         createdAt: 'desc',
       },
     });
+
+    // Filter records based on search and genre/year
+    let filteredRecords = records;
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredRecords = filteredRecords.filter(record =>
+        record.title.toLowerCase().includes(searchLower) ||
+        record.artist.toLowerCase().includes(searchLower) ||
+        record.genre?.toLowerCase().includes(searchLower) ||
+        (record.description?.toLowerCase().includes(searchLower) || false)
+      );
+    }
+
+    if (genre) {
+      const genreLower = genre.toLowerCase();
+      filteredRecords = filteredRecords.filter(record =>
+        record.genre?.toLowerCase().includes(genreLower)
+      );
+    }
+
+    if (year) {
+      filteredRecords = filteredRecords.filter(record => record.year === year);
+    }
 
     // Get unique genres for filter options
     const genres = await prisma.vinylRecord.findMany({
@@ -60,12 +65,12 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: records,
+      data: filteredRecords,
       filters: {
         genres: genres.map(g => g.genre).filter(Boolean),
         years: years.map(y => y.year).filter(Boolean),
       },
-      count: records.length,
+      count: filteredRecords.length,
     });
   } catch (error) {
     console.error('Error fetching vinyl records:', error);

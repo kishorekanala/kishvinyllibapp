@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { VinylRecord } from '@/types';
+import { VinylForm } from '@/components/admin/VinylForm';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { apiClient } from '@/lib/api-client';
 import Image from 'next/image';
@@ -84,25 +85,16 @@ export default function VinylDetailPage() {
         ← Back
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Record Info */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-            {record.title}
-          </h1>
-          <div className="space-y-2 text-slate-600 dark:text-slate-400">
-            <p><strong>Artist:</strong> {record.artist}</p>
-            {record.year && <p><strong>Year:</strong> {record.year}</p>}
-            {record.genre && <p><strong>Genre:</strong> {record.genre}</p>}
-            {record.description && (
-              <p><strong>Description:</strong> {record.description}</p>
-            )}
-          </div>
-          <p className="mt-4 text-sm text-slate-500">
-            <strong>Images:</strong> {record.images?.length || 0}
-          </p>
-        </div>
+      {/* Edit Form */}
+      <VinylForm
+        initialData={record}
+        onSuccess={(updatedRecord) => {
+          setRecord(updatedRecord);
+        }}
+        onCancel={() => router.back()}
+      />
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
         {/* Image Upload */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
@@ -113,6 +105,25 @@ export default function VinylDetailPage() {
             onImagesUpload={handleImagesUpload}
             existingImages={record.images || []}
           />
+        </div>
+
+        {/* Record Info Summary */}
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+            Record Summary
+          </h2>
+          <div className="space-y-2 text-slate-600 dark:text-slate-400">
+            <p><strong>Title:</strong> {record.title}</p>
+            <p><strong>Artist:</strong> {record.artist}</p>
+            {record.year && <p><strong>Year:</strong> {record.year}</p>}
+            {record.genre && <p><strong>Genre:</strong> {record.genre}</p>}
+            {record.description && (
+              <p><strong>Description:</strong> {record.description}</p>
+            )}
+          </div>
+          <p className="mt-4 text-sm text-slate-500">
+            <strong>Total Images:</strong> {record.images?.length || 0}
+          </p>
         </div>
       </div>
 
