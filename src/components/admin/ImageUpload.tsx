@@ -156,7 +156,7 @@ export function ImageUpload({ vinylId, onImagesUpload, existingImages = [] }: Im
       >
         <div className="mb-4">
           <svg
-            className="mx-auto h-12 w-12 text-slate-400"
+            className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-300"
             stroke="currentColor"
             fill="none"
             viewBox="0 0 48 48"

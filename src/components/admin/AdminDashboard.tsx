@@ -66,8 +66,8 @@ export function AdminDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Kishore's Vinyl Collection Manager
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">
+            KishSat's Vinyl Collection Manager
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">
             Manage your vinyl records and images

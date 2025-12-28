@@ -121,7 +121,7 @@ export default function VinylDetailPage() {
               <p><strong>Description:</strong> {record.description}</p>
             )}
           </div>
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
             <strong>Total Images:</strong> {record.images?.length || 0}
           </p>
         </div>
